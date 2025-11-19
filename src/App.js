@@ -452,7 +452,7 @@ function App() {
       if (!momentsByJoint.has(c.joint)) momentsByJoint.set(c.joint, []);
       momentsByJoint.get(c.joint).push(c);
     });
-    for (const [joint, arr] of momentsByJoint.entries()) {
+    for (const arr of momentsByJoint.entries()) {
       const keep = [];
       arr.forEach((c) => {
         const tooClose = keep.some(k => Math.hypot(k.xN - c.xN, k.yN - c.yN) < POS_EPS);

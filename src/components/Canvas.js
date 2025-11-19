@@ -489,7 +489,6 @@ const zones = zonesRaw.filter(z => !muteSet.has(z.id));
         }
       }
       
-     const hasCoupleErrors = jointIssues.some(j => j.joint?.type === 'couple');
      let overallCorrect = missingZoneIdx.length === 0 && extraElemIdx.length === 0;
 
       const jointsAllSatisfied = jointIssues.length === 0;
