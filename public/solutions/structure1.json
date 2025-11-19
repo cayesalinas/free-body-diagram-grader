@@ -1,0 +1,39 @@
+{
+  "regions": [
+    {
+      "id": "zone_1761741925467_f2iw",
+      "x": 0.17904761904761904,
+      "y": -0.04665492957746479,
+      "width": 0.13142857142857142,
+      "height": 0.37089201877934275,
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "pin" }
+    },
+    {
+      "id": "zone_1761741928584_2bwl",
+      "x": 0.05904761904761905,
+      "y": 0.05897887323943662,
+      "width": 0.38095238095238093,
+      "height": 0.1619718309859155,
+      "type": "force",
+      "forceDirection": ["right", "left"],
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "pin" }
+    },
+    {
+      "id": "zone_1761741939923_n2dq",
+      "x": 0.8152380952380952,
+      "y": 0.6153169014084507,
+      "width": 0.14095238095238094,
+      "height": 0.33098591549295775,
+      "type":"force", 
+      "forceDirection": ["up"],
+      "minLengthPx": 25,
+      "joint": { "name": "B", "type": "roller" }
+    }
+  ],
+  "imageDraw": { "x": 150, "y": 201, "w": 295, "h": 239 },
+  "meta": { "generatedAt": "2025-10-29T12:46:18.788Z", "version": 1 }
+}

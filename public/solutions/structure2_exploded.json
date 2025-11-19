@@ -1,0 +1,139 @@
+{
+  "meta": {
+    "version": 1,
+    "directionToleranceDeg": 10,
+    "lengthTolerancePct": 0.25,
+    "minLengthPxDefault": 25
+  },
+  "regions": [
+    {
+      "id": "D_tension_m1",
+      "x": 0.4376012965964344,
+      "y": 0.4847733711048159,
+      "width": 0.1507293354943274,
+      "height": 0.11331444759206799,
+      "type": "force",
+      "forceDirection": ["right"],
+      "minLengthPx": 25,
+      "joint": { "name": "D@member1", "group": "D", "member": "member1" }
+    },
+    {
+      "id": "B_vertical_m1",
+      "x": 0.520259319286872,
+      "y": 0.5300991501416431,
+      "width": 0.0713128038897893,
+      "height": 0.254957507082153,
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "joint": { "name": "B@member1", "group": "B", "member": "member1" }
+    },
+    {
+      "id": "B_horizontal_m1",
+      "x": 0.4521880064829822,
+      "y": 0.615084985835694,
+      "width": 0.20745542949756887,
+      "height": 0.11614730878186968,
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "joint": { "name": "B@member1", "group": "B", "member": "member1" }
+    },
+    {
+      "id": "E_vertical_m1",
+      "x": 0.21555915721231766,
+      "y": -0.016643059490084985,
+      "width": 0.059967585089141004,
+      "height": 0.29178470254957506,
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "joint": { "name": "E@member1", "mapFrom": "E", "group": "E", "member": "member1" }
+    },
+    {
+      "id": "E_horizontal_m1",
+      "x": 0.1539708265802269,
+      "y": 0.0825070821529745,
+      "width": 0.18638573743922204,
+      "height": 0.10198300283286119,
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "joint": { "name": "E@member1", "mapFrom": "E", "group": "E", "member": "member1" }
+    },
+    {
+      "id": "D_tension_m3",
+      "x": 0.6677471636952999,
+      "y": 0.3459631728045326,
+      "width": 0.1393841166936791,
+      "height": 0.09631728045325778,
+      "type": "force",
+      "forceDirection": ["left"],
+      "joint": { "name": "D@member3", "group": "D", "member": "member3" }
+    },
+    {
+      "id": "C_gravity_m3",
+      "x": 0.9773095623987034,
+      "y": 0.7397308781869688,
+      "width": 0.050243111831442464,
+      "height": 0.24929178470254956,
+      "type": "force",
+      "forceDirection": ["down"],
+      "joint": { "name": "C@member3", "mapFrom": "C", "group": "C", "member": "member3" }
+    },
+    {
+      "id": "B_vertical_m2",
+      "x": 0.5964343598055105,
+      "y": 0.8360481586402266,
+      "width": 0.06645056726094004,
+      "height": 0.23229461756373937,
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "joint": { "name": "B@member2", "group": "B", "member": "member2" }
+    },
+    {
+      "id": "B_horizontal_m2",
+      "x": 0.5413290113452188,
+      "y": 0.8870396600566572,
+      "width": 0.16045380875202594,
+      "height": 0.12181303116147309,
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "joint": { "name": "B@member2", "group": "B", "member": "member2" }
+    },
+    {
+      "id": "A_vertical_m2",
+      "x": 0.2771474878444084,
+      "y": 0.8190509915014165,
+      "width": 0.06320907617504051,
+      "height": 0.26628895184135976,
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "joint": { "name": "A@member2", "mapFrom": "A", "group": "A", "member": "member2" }
+    },
+    {
+      "id": "A_horizontal_m2",
+      "x": 0.22042139384116693,
+      "y": 0.8955382436260623,
+      "width": 0.17341977309562398,
+      "height": 0.11048158640226628,
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "joint": { "name": "A@member2", "mapFrom": "A", "group": "A", "member": "member2" }
+    }
+  ],
+  "couplings": [
+    {
+      "type": "equal_opposite_force",
+      "group": "B",
+      "pairs": [["B_vertical_m2", "B_vertical_m1"]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "B",
+      "pairs": [["B_horizontal_m2", "B_horizontal_m1"]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "D",
+      "pairs": [["D_tension_m1", "D_tension_m3"]]
+    }
+  ]
+}
+
