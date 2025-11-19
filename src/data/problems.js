@@ -23,6 +23,16 @@ const problems = [
     explodedImage: '/images/structure2_exploded.png',
     explodedSolutionJson: '/solutions/structure2_exploded.json'
   },
+  {
+    id: 'p3',
+    title: 'Problem 3',
+    image: '/images/structure3.png',
+    imageNoSupports: '/images/structure3_nosupports.png',
+    solutionJson:'/solutions/structure3.json',
+    // NEW for exploded stage:
+    explodedImage: '/images/structure3_exploded.png',
+    explodedSolutionJson: '/solutions/structure3_exploded.json'
+  },
 ];
 
 export default problems;
