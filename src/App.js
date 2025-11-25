@@ -276,10 +276,16 @@ function App() {
       setExplodedError('Exploded mapping requires both stage-1 and stage-2 regions.');
       return;
     }
-    if (!s1RectPx || !Number.isFinite(s1RectPx.x)) {
-      setExplodedError('Could not read supports image layout for mapping.');
+    if (
+      !s1RectPx ||
+      !Number.isFinite(s1RectPx.x) || !Number.isFinite(s1RectPx.y) ||
+      !Number.isFinite(s1RectPx.w) || !Number.isFinite(s1RectPx.h) ||
+      s1RectPx.w <= 0 || s1RectPx.h <= 0
+    ) {
+      setExplodedError('Could not read supports image layout for mapping (image size not ready).');
       return;
     }
+
 
     // ---------- helpers (normalized space) ----------
     const pointInRectN = (p, r) =>
@@ -399,6 +405,7 @@ function App() {
         momentCands.push({
           joint: jointName,
           id: `locked_${m.id}_${z2n.id}`,
+          z2Id: z2n.id,      // <-- add this
           xN: c2.x,
           yN: c2.y,
           type: m.type,
@@ -452,7 +459,7 @@ function App() {
       if (!momentsByJoint.has(c.joint)) momentsByJoint.set(c.joint, []);
       momentsByJoint.get(c.joint).push(c);
     });
-    for (const arr of momentsByJoint.entries()) {
+    for (const [, arr] of momentsByJoint.entries()) {
       const keep = [];
       arr.forEach((c) => {
         const tooClose = keep.some(k => Math.hypot(k.xN - c.xN, k.yN - c.yN) < POS_EPS);
@@ -461,10 +468,36 @@ function App() {
       acceptedMoments.push(...keep);
     }
 
+
     // commit
     setLockedArrowsN(acceptedForces.map(c => ({ id: c.id, startN: c.startN, endN: c.endN })));
     setLockedMomentsN(acceptedMoments.map(c => ({ id: c.id, xN: c.xN, yN: c.yN, type: c.type })));
-    setMutedZoneIds(Array.from(new Set(acceptedForces.map(c => c.z2Id).filter(Boolean))));
+    const mutedFromMapping = [
+      ...acceptedForces.map(c => c.z2Id),
+      ...acceptedMoments.map(c => c.z2Id),
+    ].filter(Boolean);
+    // Auto-mute zones whose base joint was an external support in stage 1
+    const SUPPORT_TYPES = new Set(['fixed', 'pinned', 'roller']);
+
+    const s1SupportBases = new Set(
+      s1Zones
+        .filter(z => SUPPORT_TYPES.has((z.joint?.type || '').toLowerCase()))
+        .map(z => (z.joint?.name || '').split('@')[0])
+        .filter(Boolean)
+    );
+
+    // Any S2 zone whose base (or mapFrom base) is in that set gets muted
+    const autoMutedByBase = s2Zones
+      .filter(z => {
+        const base = (z.joint?.name || '').split('@')[0];
+        const mapFromBase = (z.joint?.mapFrom || '').split('@')[0];
+        return s1SupportBases.has(base) || s1SupportBases.has(mapFromBase);
+      })
+      .map(z => z.id);
+
+    // Final muted set = mapped (forces + moments) ∪ auto-muted supports
+    const mutedIds = Array.from(new Set([...mutedFromMapping, ...autoMutedByBase]));
+    setMutedZoneIds(mutedIds);
     setExplodedError('');
   };
 

@@ -32,6 +32,17 @@
       "forceDirection": ["up"],
       "minLengthPx": 25,
       "joint": { "name": "B", "type": "roller" }
+    },
+    {
+      "id": "zone_1764025580460_thju",
+      "x": 0.47512437810945274,
+      "y": 0.3101993865030675,
+      "width": 0.1318407960199005,
+      "height": 0.27300613496932513,
+      "type":"force", 
+      "forceDirection": ["down"],
+      "minLengthPx": 25,
+      "joint": { "name": "C"}
     }
   ],
   "imageDraw": { "x": 150, "y": 201, "w": 295, "h": 239 },

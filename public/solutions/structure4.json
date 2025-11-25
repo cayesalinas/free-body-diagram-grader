@@ -1,0 +1,62 @@
+{
+  "regions": [
+    {
+      "id": "Tension",
+      "rotationDeg": 20.151747034211066,
+      "x": -0.08401084010840093,
+      "y": 0.1660276073619632,
+      "width": 0.9268292682926802,
+      "height": 0.07055214723926438,
+      "type": "force",
+      "angleRangesDeg": [[195, 205]],
+      "minLengthPx": 25,
+      "joint": { "name": "C", "type": "cable" }
+    },
+    {
+      "id": "A_vertical",
+      "rotationDeg": 0,
+      "x": 0.024390243902439025,
+      "y": 0.38381901840490795,
+      "width": 0.08130081300813008,
+      "height": 0.254601226993865,
+      "type": "force",
+      "forceDirection": ["up","down"],
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "fixed" }
+    },
+    {
+      "id": "A_horizontal",
+      "rotationDeg": 0,
+      "x": -0.04878048780487805,
+      "y": 0.46050613496932513,
+      "width": 0.2086720867208672,
+      "height": 0.09202453987730061,
+      "type": "force",
+      "forceDirection": ["right","left"],
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "pin" }
+    },
+    {
+      "id": "weight",
+      "rotationDeg": 0,
+      "x": 0.4254742547425474,
+      "y": 0.44516871165644173,
+      "width": 0.07859078590785908,
+      "height": 0.2116564417177914,
+      "type": "force",
+      "forceDirection": "down",
+      "minLengthPx": 25,
+      "joint": { "name": "E", "type": "weight" }
+    }
+  ],
+  "imageDraw": {
+    "x": 453,
+    "y": 150,
+    "w": 369,
+    "h": 326
+  },
+  "meta": {
+    "generatedAt": "2025-11-25T01:11:30.179Z",
+    "version": 1
+  }
+}

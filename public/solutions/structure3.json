@@ -1,0 +1,68 @@
+{
+  "regions": [
+    {
+      "id": "mass_weight",
+      "x": 0.6038732394366197,
+      "y": 0.16909509202453987,
+      "width": 0.051056338028169015,
+      "height": 0.25153374233128833,
+      "type": "force",
+      "forceDirection": "down",
+      "minLengthPx": 25,
+      "joint": { "name": "H", "type": "pulley" }
+    },
+    {
+      "id": "tension force",
+      "x": 0.23943661971830985,
+      "y": -0.03642638036809816,
+      "width": 0.26936619718309857,
+      "height": 0.09815950920245399,
+      "type": "force",
+      "forceDirection": "left",
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "pulley" }
+    },
+    {
+      "id": "horizontal_wall",
+      "x": 0.20774647887323944,
+      "y": 0.6414877300613497,
+      "width": 0.13556338028169015,
+      "height": 0.12576687116564417,
+      "type": "force",
+      "forceDirection": ["right","left"],
+      "minLengthPx": 25,
+      "joint": { "name": "E", "type": "fixed" }
+    },
+    {
+      "id": "vertical_wall",
+      "x": 0.25,
+      "y": 0.5463957055214724,
+      "width": 0.0721830985915493,
+      "height": 0.30368098159509205,
+      "type": "force",
+      "forceDirection": ["up","down"],
+      "minLengthPx": 25,
+      "joint": { "name": "E", "type": "fixed" }
+    },
+    {
+      "id": "moment_wall",
+      "x": 0.22535211267605634,
+      "y": 0.598542944785276,
+      "width": 0.11971830985915492,
+      "height": 0.20245398773006135,
+      "type": "moment",
+      "momentDirection": ["CW","CCW"],
+      "joint": { "name": "E", "type": "fixed" }
+    }
+  ],
+  "imageDraw": {
+    "x": 353,
+    "y": 150,
+    "w": 568,
+    "h": 326
+  },
+  "meta": {
+    "generatedAt": "2025-11-24T23:13:38.487Z",
+    "version": 1
+  }
+}

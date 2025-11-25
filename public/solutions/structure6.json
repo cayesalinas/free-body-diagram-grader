@@ -1,0 +1,50 @@
+{
+  "regions": [
+    {
+      "id": "C_normal",
+      "rotationDeg": 0,
+      "x": 0.22266139657444006,
+      "y": 0.540260736196319,
+      "width": 0.043478260869565216,
+      "height": 0.3374233128834356,
+      "type": "force",
+      "forceDirection": "up",
+      "minLengthPx": 25,
+      "joint": { "name": "C", "type": "roller" }
+    },
+    {
+      "id": "E_weight",
+      "rotationDeg": 0,
+      "x": 0.525691699604743,
+      "y": 0.41756134969325154,
+      "width": 0.043478260869565216,
+      "height": 0.3312883435582822,
+      "type": "force",
+      "forceDirection": "down",
+      "minLengthPx": 25,
+      "joint": { "name": "E", "type": "roller" }
+    },
+    {
+      "id": "D_wall",
+      "rotationDeg": 0,
+      "x": 0.7839262187088274,
+      "y": 0.14455521472392638,
+      "width": 0.15678524374176547,
+      "height": 0.13190184049079753,
+      "type": "force",
+      "forceDirection": "left",
+      "minLengthPx": 25,
+      "joint": { "name": "D", "type": "wall" }
+    }
+  ],
+  "imageDraw": {
+    "x": 258,
+    "y": 150,
+    "w": 759,
+    "h": 326
+  },
+  "meta": {
+    "generatedAt": "2025-11-25T01:26:34.319Z",
+    "version": 1
+  }
+}
