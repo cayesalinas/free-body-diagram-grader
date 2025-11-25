@@ -87,6 +87,10 @@ const Canvas = forwardRef(function Canvas(
   const boxRefs   = useRef({});   // Inner Rect per zone id
   const dragCache = useRef({});
 
+  // Refs to call finalize functions inside global listeners without ESLint deps noise
+  const finalizeArrowRef = useRef(() => {});
+  const finalizeZoneAddRef = useRef(() => {});
+
   const [thumbOpen, setThumbOpen] = useState(false);
 
   // ---------- helpers ----------
@@ -286,19 +290,64 @@ const Canvas = forwardRef(function Canvas(
       ro.disconnect();
     };
   }, [structureImage, fitPadding]);
+    
+    // ---------- finalize ops ----------
+    const finalizeZoneAdd = () => {
+      if (!drawingRect) return;
 
-  useEffect(() => {
-    const onUp = () => {
-      if (drawingRect) finalizeZoneAdd();
-      if (isDrawingArrow && newArrow) finalizeArrow();
+      const stg = getStageRectPx();
+
+      const x0 = drawingRect.width < 0 ? drawingRect.x + drawingRect.width : drawingRect.x;
+      const y0 = drawingRect.height < 0 ? drawingRect.y + drawingRect.height : drawingRect.y;
+      const w0 = Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.width));
+      const h0 = Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.height));
+
+      const x1 = Math.max(stg.left, Math.min(stg.right - MIN_ZONE_SIZE, x0));
+      const y1 = Math.max(stg.top, Math.min(stg.bottom - MIN_ZONE_SIZE, y0));
+      const x2 = Math.max(stg.left + MIN_ZONE_SIZE, Math.min(stg.right, x0 + w0));
+      const y2 = Math.max(stg.top + MIN_ZONE_SIZE, Math.min(stg.bottom, y0 + h0));
+
+      const rectPx = {
+        x: Math.min(x1, x2),
+        y: Math.min(y1, y2),
+        width: Math.max(MIN_ZONE_SIZE, Math.abs(x2 - x1)),
+        height: Math.max(MIN_ZONE_SIZE, Math.abs(y2 - y1))
+      };
+
+      if (imageDraw.w > 0 && imageDraw.h > 0) {
+        const norm = pxRectToNorm(rectPx);
+        const id = `zone_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        setSupports((prev) => [...prev, { id, rotationDeg: 0, ...norm }]);
+      }
+      setDrawingRect(null);
     };
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('touchend', onUp);
-    return () => {
-      window.removeEventListener('mouseup', onUp);
-      window.removeEventListener('touchend', onUp);
+
+    const finalizeArrow = () => {
+      if (!isDrawingArrow || !newArrow) return;
+      setArrows((prev) => [...prev, newArrow]);
+      setNewArrow(null);
+      setIsDrawingArrow(false);
     };
-  }, [drawingRect, isDrawingArrow, newArrow]);
+
+    useEffect(() => {
+      finalizeArrowRef.current = finalizeArrow;
+      finalizeZoneAddRef.current = finalizeZoneAdd;
+    }, [finalizeArrow, finalizeZoneAdd]);
+
+    useEffect(() => {
+      const onUp = () => {
+        // Always call; each function is a no-op if nothing’s in progress.
+        finalizeZoneAddRef.current();
+        finalizeArrowRef.current();
+      };
+      window.addEventListener('mouseup', onUp);
+      window.addEventListener('touchend', onUp);
+      return () => {
+        window.removeEventListener('mouseup', onUp);
+        window.removeEventListener('touchend', onUp);
+      };
+    }, []);
+
 
   useEffect(() => {
     if (!initialSupportRegions) return;
@@ -694,43 +743,6 @@ const Canvas = forwardRef(function Canvas(
     __getImageDraw: () => imageDraw
   }));
 
-  // ---------- finalize ops ----------
-  const finalizeZoneAdd = () => {
-    if (!drawingRect) return;
-
-    const stg = getStageRectPx();
-
-    const x0 = drawingRect.width < 0 ? drawingRect.x + drawingRect.width : drawingRect.x;
-    const y0 = drawingRect.height < 0 ? drawingRect.y + drawingRect.height : drawingRect.y;
-    const w0 = Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.width));
-    const h0 = Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.height));
-
-    const x1 = Math.max(stg.left, Math.min(stg.right - MIN_ZONE_SIZE, x0));
-    const y1 = Math.max(stg.top, Math.min(stg.bottom - MIN_ZONE_SIZE, y0));
-    const x2 = Math.max(stg.left + MIN_ZONE_SIZE, Math.min(stg.right, x0 + w0));
-    const y2 = Math.max(stg.top + MIN_ZONE_SIZE, Math.min(stg.bottom, y0 + h0));
-
-    const rectPx = {
-      x: Math.min(x1, x2),
-      y: Math.min(y1, y2),
-      width: Math.max(MIN_ZONE_SIZE, Math.abs(x2 - x1)),
-      height: Math.max(MIN_ZONE_SIZE, Math.abs(y2 - y1))
-    };
-
-    if (imageDraw.w > 0 && imageDraw.h > 0) {
-      const norm = pxRectToNorm(rectPx);
-      const id = `zone_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      setSupports((prev) => [...prev, { id, rotationDeg: 0, ...norm }]);
-    }
-    setDrawingRect(null);
-  };
-
-  const finalizeArrow = () => {
-    if (!isDrawingArrow || !newArrow) return;
-    setArrows((prev) => [...prev, newArrow]);
-    setNewArrow(null);
-    setIsDrawingArrow(false);
-  };
 
   // ---------- pointer handlers ----------
   const handleMouseDown = (e) => {
@@ -860,16 +872,6 @@ const Canvas = forwardRef(function Canvas(
     const x = Math.max(stg.left, Math.min(stg.right - w, pos.x));
     const y = Math.max(stg.top, Math.min(stg.bottom - h, pos.y));
     return { x, y };
-  };
-
-  const clampTransformerBox = (oldBox, newBox) => {
-    let nx = newBox.x;
-    let ny = newBox.y;
-    let nw = Math.max(MIN_ZONE_SIZE, newBox.width);
-    let nh = Math.max(MIN_ZONE_SIZE, newBox.height);
-    if (nw === MIN_ZONE_SIZE && newBox.x !== oldBox.x) nx = oldBox.x + (oldBox.width - MIN_ZONE_SIZE);
-    if (nh === MIN_ZONE_SIZE && newBox.y !== oldBox.y) ny = oldBox.y + (oldBox.height - MIN_ZONE_SIZE);
-    return { x: nx, y: ny, width: nw, height: nh };
   };
 
   const showTooltip = !toolMode && arrows.length === 0 && moments.length === 0 && !devMode;
