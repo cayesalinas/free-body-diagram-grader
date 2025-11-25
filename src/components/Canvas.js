@@ -209,7 +209,8 @@ const Canvas = forwardRef(function Canvas(
     };
   };
 
-  const pxRectToNorm = (r) => {
+  // Converts pixel rect to normalized coords (memoized so ESLint stops complaining)
+  const pxRectToNorm = useCallback((r) => {
     const { x, y, w, h } = imageDraw;
     const iw = w || 1;
     const ih = h || 1;
@@ -229,7 +230,8 @@ const Canvas = forwardRef(function Canvas(
       width: Number.isFinite(nw) ? nw : minWn,
       height: Number.isFinite(nh) ? nh : minHn,
     };
-  };
+  }, [imageDraw.x, imageDraw.y, imageDraw.w, imageDraw.h]);
+
 
   const normToPxPoint = (pN) => {
     const nx = Number.isFinite(pN?.x) ? pN.x : null;
