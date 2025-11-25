@@ -115,6 +115,24 @@ const Canvas = forwardRef(function Canvas(
     ((Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI + 360) % 360;
 
   const lengthPx = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  // Normalize angle into [0,360)
+  const normDeg = (d) => ((d % 360) + 360) % 360;
+
+  /**
+   * Check if an angle (degrees) is inside any of the [lo,hi] ranges (degrees).
+   * Ranges may wrap across 0/360 (e.g., [350, 10]).
+   */
+  const isAngleInRanges = (theta, ranges) => {
+    if (!ranges || ranges.length === 0) return true;
+    const t = normDeg(theta);
+    return ranges.some(([a, b]) => {
+      const lo = normDeg(a);
+      const hi = normDeg(b);
+      if (lo <= hi) return t >= lo && t <= hi;
+      // wrapped interval
+      return t >= lo || t <= hi;
+    });
+  };
 
   const ccw = (A, B, C) => (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x);
   const segIntersects = (A, B, C, D) =>
@@ -547,6 +565,12 @@ const Canvas = forwardRef(function Canvas(
           });
         }
       }
+      const jointsAllSatisfied = jointIssues.length === 0;
+      const extraElementsNotice =
+        jointsAllSatisfied &&
+        missingZoneIdx.length === 0 &&
+        extrasOutsideAny.length > 0 &&
+        extrasInsideAny.length === 0;
 
       let overallCorrect = missingZoneIdx.length === 0 && extraElemIdx.length === 0;
 
