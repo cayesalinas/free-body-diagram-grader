@@ -4,7 +4,8 @@ import React, {
   useEffect,
   useImperativeHandle,
   useRef,
-  useState
+  useState,
+  useCallback
 } from 'react';
 import {
   Stage,
@@ -94,13 +95,14 @@ const Canvas = forwardRef(function Canvas(
   const [thumbOpen, setThumbOpen] = useState(false);
 
   // ---------- helpers ----------
-  const getStageRectPx = () => ({
-    left: 0, top: 0,
+  const getStageRectPx = useCallback(() => ({
+    left: 0,
+    top: 0,
     right: canvasSize.width,
     bottom: canvasSize.height,
     w: canvasSize.width,
     h: canvasSize.height
-  });
+  }), [canvasSize]);
 
   const angleDeg = (start, end) =>
     ((Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI + 360) % 360;
@@ -292,7 +294,7 @@ const Canvas = forwardRef(function Canvas(
   }, [structureImage, fitPadding]);
     
     // ---------- finalize ops ----------
-    const finalizeZoneAdd = () => {
+    const finalizeZoneAdd = useCallback(() => {
       if (!drawingRect) return;
 
       const stg = getStageRectPx();
@@ -320,14 +322,15 @@ const Canvas = forwardRef(function Canvas(
         setSupports((prev) => [...prev, { id, rotationDeg: 0, ...norm }]);
       }
       setDrawingRect(null);
-    };
+    }, [drawingRect, getStageRectPx, imageDraw, pxRectToNorm, setSupports, setDrawingRect]);
 
-    const finalizeArrow = () => {
+
+    const finalizeArrow = useCallback(() => {
       if (!isDrawingArrow || !newArrow) return;
       setArrows((prev) => [...prev, newArrow]);
       setNewArrow(null);
       setIsDrawingArrow(false);
-    };
+    }, [isDrawingArrow, newArrow, setArrows]);
 
     useEffect(() => {
       finalizeArrowRef.current = finalizeArrow;
