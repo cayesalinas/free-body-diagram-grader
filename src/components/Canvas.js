@@ -25,17 +25,15 @@ import useImage from 'use-image';
  Props:
   - toolMode: 'force' | 'moment-cw' | 'moment-ccw' | 'eraser' | 'zone-add' | null
   - clearSignal: number
-  - mainImage: string
-  - referenceImage: string
+  - mainImage: string (no-support image)
+  - referenceImage: string (supports image thumbnail)
   - devMode: boolean
   - downloadTrigger: number
   - fitPadding?: number
   - showCanvasBorder?: boolean
   - initialSupportRegions: array | { regions: [...] }
-  - lockedArrowsNorm?: array
-  - lockedMomentsNorm?: array
-  - muteZoneIds?: array
-  - enforceCouples?: boolean
+  - lockedArrowsNorm?: array   // read-only carry-over (normalized to current image)
+  - lockedMomentsNorm?: array  // read-only (normalized)
 */
 const MIN_ZONE_SIZE = 10;
 const DEFAULT_FIT_PADDING = 150;
@@ -59,6 +57,7 @@ const Canvas = forwardRef(function Canvas(
   ref
 ) {
   const containerRef = useRef(null);
+  const stageRef = useRef(null);
 
   // assets
   const [structureImage] = useImage(mainImage);
@@ -79,22 +78,30 @@ const Canvas = forwardRef(function Canvas(
 
   // zones
   const [supports, setSupports] = useState([]);
+
+  // Load solution regions from JSON (array or { regions: [...] })
+  useEffect(() => {
+    if (!initialSupportRegions) return;
+    const regions = Array.isArray(initialSupportRegions)
+      ? initialSupportRegions
+      : (initialSupportRegions.regions || []);
+    if (regions.length) {
+      const withIds = regions.map((z, i) => ({ id: z.id || `zone_${i}`, rotationDeg: z.rotationDeg || 0, ...z }));
+      setSupports(withIds);
+    } else {
+      setSupports([]);
+    }
+  }, [initialSupportRegions]);
+
   const [drawingRect, setDrawingRect] = useState(null);
   const [selectedSupportId, setSelectedSupportId] = useState(null);
   const [hoverSupportId, setHoverSupportId] = useState(null);
-
-  // Refs for rotated zones
-  const groupRefs = useRef({});   // Group (draggable/rotatable) per zone id
-  const boxRefs   = useRef({});   // Inner Rect per zone id
+  const groupRefs = useRef({});   // group (draggable/rotatable) per zone id
+  const boxRefs = useRef({});     // inner Rect per zone id
   const dragCache = useRef({});
-
-  // Refs to call finalize functions inside global listeners without ESLint deps noise
-  const finalizeArrowRef = useRef(() => {});
-  const finalizeZoneAddRef = useRef(() => {});
 
   const [thumbOpen, setThumbOpen] = useState(false);
 
-  // ---------- helpers ----------
   const getStageRectPx = useCallback(() => ({
     left: 0,
     top: 0,
@@ -107,41 +114,15 @@ const Canvas = forwardRef(function Canvas(
   const angleDeg = (start, end) =>
     ((Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI + 360) % 360;
 
-  const pointInRect = (p, r) =>
-    p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
-
-  const isAngleInRanges = (theta, ranges) => {
-    if (!ranges || !ranges.length) return true;
-    return ranges.some(([a, b]) => {
-      const lo = ((a % 360) + 360) % 360;
-      const hi = ((b % 360) + 360) % 360;
-      if (lo <= hi) return theta >= lo && theta <= hi;
-      return theta >= lo || theta <= hi;
-    });
-  };
-
   const lengthPx = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
   const ccw = (A, B, C) => (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x);
   const segIntersects = (A, B, C, D) =>
     (ccw(A, C, D) !== ccw(B, C, D)) && (ccw(A, B, C) !== ccw(A, B, D));
 
-  const segmentIntersectsRect = (P, Q, rect) => {
-    if (pointInRect(P, rect) || pointInRect(Q, rect)) return true;
-    const R1 = { x: rect.x, y: rect.y };
-    const R2 = { x: rect.x + rect.width, y: rect.y };
-    const R3 = { x: rect.x + rect.width, y: rect.y + rect.height };
-    const R4 = { x: rect.x, y: rect.y + rect.height };
-    return (
-      segIntersects(P, Q, R1, R2) ||
-      segIntersects(P, Q, R2, R3) ||
-      segIntersects(P, Q, R3, R4) ||
-      segIntersects(P, Q, R4, R1)
-    );
-  };
-
-  // rotated-rect utils
+  // ===== Rotated-rect utilities =====
   const degToRad = (d) => (d * Math.PI) / 180;
+
   const rotatePointAround = (p, center, deg) => {
     const a = -degToRad(deg); // inverse rotate for hit-test
     const cos = Math.cos(a), sin = Math.sin(a);
@@ -149,8 +130,10 @@ const Canvas = forwardRef(function Canvas(
     const dy = p.y - center.y;
     return { x: center.x + dx * cos - dy * sin, y: center.y + dx * sin + dy * cos };
   };
+
   const pointInAARect = (p, r) =>
     p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
+
   const segmentIntersectsAARect = (P, Q, rect) => {
     if (pointInAARect(P, rect) || pointInAARect(Q, rect)) return true;
     const R1 = { x: rect.x, y: rect.y };
@@ -164,12 +147,14 @@ const Canvas = forwardRef(function Canvas(
       segIntersects(P, Q, R4, R1)
     );
   };
+
   const pointInRotRect = (p, rect, rotationDeg) => {
     if (!rotationDeg) return pointInAARect(p, rect);
     const c = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
     const pr = rotatePointAround(p, c, rotationDeg);
     return pointInAARect(pr, rect);
   };
+
   const segmentIntersectsRotRect = (P, Q, rect, rotationDeg) => {
     if (!rotationDeg) return segmentIntersectsAARect(P, Q, rect);
     const c = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
@@ -231,7 +216,10 @@ const Canvas = forwardRef(function Canvas(
   const normToPxPoint = (pN) => {
     const nx = Number.isFinite(pN?.x) ? pN.x : null;
     const ny = Number.isFinite(pN?.y) ? pN.y : null;
-    if (nx === null || ny === null) return { x: -9999, y: -9999 };
+    if (nx === null || ny === null) {
+      console.warn('[normToPxPoint] bad normalized coords', pN, imageDraw);
+      return { x: -9999, y: -9999 };
+    }
     return {
       x: imageDraw.x + nx * (imageDraw.w || 1),
       y: imageDraw.y + ny * (imageDraw.h || 1),
@@ -248,7 +236,6 @@ const Canvas = forwardRef(function Canvas(
     return { sx: s.x, sy: s.y, ex: s.x + fx, ey: s.y + fy };
   };
 
-  // ---------- effects ----------
   useEffect(() => {
     let raf = null;
 
@@ -285,6 +272,7 @@ const Canvas = forwardRef(function Canvas(
 
     const ro = new ResizeObserver(schedule);
     if (containerRef.current) ro.observe(containerRef.current);
+
     schedule();
 
     return () => {
@@ -292,78 +280,91 @@ const Canvas = forwardRef(function Canvas(
       ro.disconnect();
     };
   }, [structureImage, fitPadding]);
-    
-    // ---------- finalize ops ----------
-    const finalizeZoneAdd = useCallback(() => {
-      if (!drawingRect) return;
 
-      const stg = getStageRectPx();
-
-      const x0 = drawingRect.width < 0 ? drawingRect.x + drawingRect.width : drawingRect.x;
-      const y0 = drawingRect.height < 0 ? drawingRect.y + drawingRect.height : drawingRect.y;
-      const w0 = Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.width));
-      const h0 = Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.height));
-
-      const x1 = Math.max(stg.left, Math.min(stg.right - MIN_ZONE_SIZE, x0));
-      const y1 = Math.max(stg.top, Math.min(stg.bottom - MIN_ZONE_SIZE, y0));
-      const x2 = Math.max(stg.left + MIN_ZONE_SIZE, Math.min(stg.right, x0 + w0));
-      const y2 = Math.max(stg.top + MIN_ZONE_SIZE, Math.min(stg.bottom, y0 + h0));
-
-      const rectPx = {
-        x: Math.min(x1, x2),
-        y: Math.min(y1, y2),
-        width: Math.max(MIN_ZONE_SIZE, Math.abs(x2 - x1)),
-        height: Math.max(MIN_ZONE_SIZE, Math.abs(y2 - y1))
-      };
-
-      if (imageDraw.w > 0 && imageDraw.h > 0) {
-        const norm = pxRectToNorm(rectPx);
-        const id = `zone_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-        setSupports((prev) => [...prev, { id, rotationDeg: 0, ...norm }]);
-      }
-      setDrawingRect(null);
-    }, [drawingRect, getStageRectPx, imageDraw, pxRectToNorm, setSupports, setDrawingRect]);
-
-
-    const finalizeArrow = useCallback(() => {
-      if (!isDrawingArrow || !newArrow) return;
-      setArrows((prev) => [...prev, newArrow]);
-      setNewArrow(null);
-      setIsDrawingArrow(false);
-    }, [isDrawingArrow, newArrow, setArrows]);
-
-    useEffect(() => {
-      finalizeArrowRef.current = finalizeArrow;
-      finalizeZoneAddRef.current = finalizeZoneAdd;
-    }, [finalizeArrow, finalizeZoneAdd]);
-
-    useEffect(() => {
-      const onUp = () => {
-        // Always call; each function is a no-op if nothing’s in progress.
-        finalizeZoneAddRef.current();
-        finalizeArrowRef.current();
-      };
-      window.addEventListener('mouseup', onUp);
-      window.addEventListener('touchend', onUp);
-      return () => {
-        window.removeEventListener('mouseup', onUp);
-        window.removeEventListener('touchend', onUp);
-      };
-    }, []);
-
-
+  // ---- DPR stabilizer ----
+  const getStableDPR = () => {
+    const dpr = window.devicePixelRatio || 1;
+    return Math.round(dpr * 20) / 20;
+  };
+  const [pixelRatio, setPixelRatio] = useState(getStableDPR());
   useEffect(() => {
-    if (!initialSupportRegions) return;
-    const regions = Array.isArray(initialSupportRegions)
-      ? initialSupportRegions
-      : (initialSupportRegions.regions || []);
-    if (regions.length) {
-      const withIds = regions.map((z, i) => ({ id: z.id || `zone_${i}`, ...z }));
-      setSupports(withIds);
-    } else {
-      setSupports([]);
+    const update = () => setPixelRatio(getStableDPR());
+    window.addEventListener('resize', update, { passive: true });
+    let mm;
+    if (window.matchMedia) {
+      try {
+        mm = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+        if (mm?.addEventListener) mm.addEventListener('change', update);
+        else if (mm?.addListener) mm.addListener(update);
+      } catch {}
     }
-  }, [initialSupportRegions]);
+    return () => {
+      window.removeEventListener('resize', update);
+      if (mm?.removeEventListener) mm.removeEventListener('change', update);
+      else if (mm?.removeListener) mm.removeListener?.(update);
+    };
+  }, []);
+  // ---- end DPR stabilizer ----
+
+  // Stable callbacks
+  const finalizeZoneAdd = useCallback(() => {
+    if (!drawingRect) return;
+
+    const stg = getStageRectPx();
+
+    const x0 = drawingRect.width < 0 ? drawingRect.x + drawingRect.width : drawingRect.x;
+    const y0 = drawingRect.height < 0 ? drawingRect.y + drawingRect.height : drawingRect.y;
+    const w0 = Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.width));
+    const h0 = Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.height));
+
+    const x1 = Math.max(stg.left, Math.min(stg.right - MIN_ZONE_SIZE, x0));
+    const y1 = Math.max(stg.top, Math.min(stg.bottom - MIN_ZONE_SIZE, y0));
+    const x2 = Math.max(stg.left + MIN_ZONE_SIZE, Math.min(stg.right, x0 + w0));
+    const y2 = Math.max(stg.top + MIN_ZONE_SIZE, Math.min(stg.bottom, y0 + h0));
+
+    const rectPx = {
+      x: Math.min(x1, x2),
+      y: Math.min(y1, y2),
+      width: Math.max(MIN_ZONE_SIZE, Math.abs(x2 - x1)),
+      height: Math.max(MIN_ZONE_SIZE, Math.abs(y2 - y1))
+    };
+
+    if (imageDraw.w > 0 && imageDraw.h > 0) {
+      const norm = pxRectToNorm(rectPx);
+      const id = `zone_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      setSupports((prev) => [...prev, { id, rotationDeg: 0, ...norm }]);
+    }
+    setDrawingRect(null);
+  }, [drawingRect, getStageRectPx, imageDraw, pxRectToNorm]);
+
+  const finalizeArrow = useCallback(() => {
+    if (!isDrawingArrow || !newArrow) return;
+    setArrows((prev) => [...prev, newArrow]);
+    setNewArrow(null);
+    setIsDrawingArrow(false);
+  }, [isDrawingArrow, newArrow]);
+
+  // Ref bridge so global listeners don't need these in their deps
+  const finalizeArrowRef = useRef(() => {});
+  const finalizeZoneAddRef = useRef(() => {});
+  useEffect(() => {
+    finalizeArrowRef.current = finalizeArrow;
+    finalizeZoneAddRef.current = finalizeZoneAdd;
+  }, [finalizeArrow, finalizeZoneAdd]);
+
+  // Global mouseup/touchend (no hook deps warning)
+  useEffect(() => {
+    const onUp = () => {
+      finalizeZoneAddRef.current();
+      finalizeArrowRef.current();
+    };
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+    return () => {
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchend', onUp);
+    };
+  }, []);
 
   useEffect(() => {
     setArrows([]);
@@ -391,7 +392,7 @@ const Canvas = forwardRef(function Canvas(
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 0);
-    } catch (err) {
+    } catch {
       const safe = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(payload, null, 2));
       const a = document.createElement('a');
       a.href = safe;
@@ -402,47 +403,6 @@ const Canvas = forwardRef(function Canvas(
     }
   }, [downloadTrigger, supports, imageDraw]);
 
-  // DPR stabilizer
-  const getStableDPR = () => {
-    const dpr = window.devicePixelRatio || 1;
-    return Math.round(dpr * 20) / 20;
-  };
-  const [pixelRatio, setPixelRatio] = useState(getStableDPR());
-  useEffect(() => {
-    const update = () => setPixelRatio(getStableDPR());
-    window.addEventListener('resize', update, { passive: true });
-    let mm;
-    if (window.matchMedia) {
-      try {
-        mm = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-        if (mm?.addEventListener) mm.addEventListener('change', update);
-        else if (mm?.addListener) mm.addListener(update);
-      } catch {}
-    }
-    return () => {
-      window.removeEventListener('resize', update);
-      if (mm?.removeEventListener) mm.removeEventListener('change', update);
-      else if (mm?.removeListener) mm.removeListener?.(update);
-    };
-  }, []);
-
-  // Clamp a GROUP (handles rotation) to stay inside stage
-  const clampTransform = (node) => {
-    const stg = getStageRectPx();
-    const cr = node.getClientRect({ skipShadow: true, skipStroke: false });
-    let dx = 0;
-    let dy = 0;
-    if (cr.x < stg.left) dx = stg.left - cr.x;
-    if (cr.y < stg.top) dy = stg.top - cr.y;
-    if (cr.x + cr.width > stg.right) dx = stg.right - (cr.x + cr.width);
-    if (cr.y + cr.height > stg.bottom) dy = stg.bottom - (cr.y + cr.height);
-    if (dx || dy) {
-      node.x(node.x() + dx);
-      node.y(node.y() + dy);
-    }
-  };
-
-  // ---------- imperative API ----------
   useImperativeHandle(ref, () => ({
     checkSubmission: () => {
       if (!structureImage || !supports || supports.length === 0) {
@@ -500,6 +460,7 @@ const Canvas = forwardRef(function Canvas(
         };
       });
 
+      // skip muted
       const zones = zonesRaw.filter(z => !muteSet.has(z.id));
 
       const candidates = [];
@@ -545,8 +506,8 @@ const Canvas = forwardRef(function Canvas(
       const extraElemIdx = student.map((_, i) => i).filter((i) => !usedE.has(i));
 
       const elTouchesZone = (el, z) => {
-        if (el.kind === 'force') return segmentIntersectsRect(el.startPx, el.endPx, z.rectPx);
-        return pointInRect(el.centerPx, z.rectPx);
+        if (el.kind === 'force') return segmentIntersectsRotRect(el.startPx, el.endPx, z.rectPx, z.rotationDeg || 0);
+        return pointInRotRect(el.centerPx, z.rectPx, z.rotationDeg || 0);
       };
       const isInAnyZone = (el) => zones.some((z) => elTouchesZone(el, z));
       const extrasInsideAny = extraElemIdx.filter((i) => isInAnyZone(student[i]));
@@ -588,13 +549,6 @@ const Canvas = forwardRef(function Canvas(
       }
 
       let overallCorrect = missingZoneIdx.length === 0 && extraElemIdx.length === 0;
-
-      const jointsAllSatisfied = jointIssues.length === 0;
-      const extraElementsNotice =
-        jointsAllSatisfied &&
-        missingZoneIdx.length === 0 &&
-        extrasOutsideAny.length > 0 &&
-        extrasInsideAny.length === 0;
 
       if (enforceCouples) {
         const zoneToElem = new Map();
@@ -722,10 +676,11 @@ const Canvas = forwardRef(function Canvas(
         }
 
         const hasCoupleErrors = jointIssues.some((j) => j.joint?.type === 'couple');
-        overallCorrect =
+        const recomputeOverall =
           missingZoneIdx.length === 0 &&
           extraElemIdx.length === 0 &&
           !hasCoupleErrors;
+        overallCorrect = recomputeOverall;
       }
 
       return {
@@ -746,8 +701,6 @@ const Canvas = forwardRef(function Canvas(
     __getImageDraw: () => imageDraw
   }));
 
-
-  // ---------- pointer handlers ----------
   const handleMouseDown = (e) => {
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
@@ -843,13 +796,13 @@ const Canvas = forwardRef(function Canvas(
   };
 
   const onZoneDragStart = (z, e) => {
-    const node = e.target; // Group
+    const node = e.target;
     const cr = node.getClientRect({ skipShadow: true, skipStroke: false });
-    dragCache.current[z.id] = { w: cr.width || 0, h: cr.height || 0 };
+    dragCache.current[z.id] = { w: cr.width || node.width(), h: cr.height || node.height() };
   };
 
   const onZoneDragMove = (z, e) => {
-    const node = e.target; // Group
+    const node = e.target;
     const stg = getStageRectPx();
     const cr = node.getClientRect({ skipShadow: true, skipStroke: false });
 
@@ -870,8 +823,8 @@ const Canvas = forwardRef(function Canvas(
     const stg = getStageRectPx();
     const sizes = dragCache.current[id];
     if (!sizes) return pos;
-    const w = sizes.w || MIN_ZONE_SIZE;
-    const h = sizes.h || MIN_ZONE_SIZE;
+    const w = sizes.w;
+    const h = sizes.h;
     const x = Math.max(stg.left, Math.min(stg.right - w, pos.x));
     const y = Math.max(stg.top, Math.min(stg.bottom - h, pos.y));
     return { x, y };
@@ -886,7 +839,6 @@ const Canvas = forwardRef(function Canvas(
       : toolMode?.startsWith('moment') ? 'copy'
       : 'default';
 
-  // ---------- render ----------
   return (
     <div
       ref={containerRef}
@@ -913,6 +865,7 @@ const Canvas = forwardRef(function Canvas(
       )}
 
       <Stage
+        ref={stageRef}
         width={canvasSize.width}
         height={canvasSize.height}
         onMouseDown={handleMouseDown}
@@ -921,7 +874,7 @@ const Canvas = forwardRef(function Canvas(
         pixelRatio={pixelRatio}
         style={{ background: '#fff', cursor }}
       >
-        {/* 1) Base image */}
+        {/* Layer 1: image */}
         <Layer listening>
           {structureImage && (
             <KonvaImage
@@ -936,7 +889,182 @@ const Canvas = forwardRef(function Canvas(
           )}
         </Layer>
 
-        {/* 2) Locked carry-over (non-interactive) */}
+        {/* Layer 2: zones (Dev Mode only) */}
+        {devMode && (
+          <Layer>
+            {supports.map((z) => {
+              const px = normToPxRect(z);
+              const isSelected = devMode && selectedSupportId === z.id;
+              return (
+                <React.Fragment key={z.id}>
+                  {(() => {
+                    const pxW = Math.max(px.width, MIN_ZONE_SIZE);
+                    const pxH = Math.max(px.height, MIN_ZONE_SIZE);
+                    const cx = px.x + pxW / 2;
+                    const cy = px.y + pxH / 2;
+                    const rot = Number.isFinite(z.rotationDeg) ? z.rotationDeg : 0;
+
+                    return (
+                      <Group
+                        ref={(node) => { if (node) groupRefs.current[z.id] = node; }}
+                        x={cx}
+                        y={cy}
+                        rotation={rot}
+                        draggable={devMode && isSelected}
+                        dragBoundFunc={dragBoundFor(z.id)}
+                        onDragStart={(e) => onZoneDragStart(z, e)}
+                        onDragMove={(e) => onZoneDragMove(z, e)}
+                        onClick={(e) => {
+                          if (!devMode) return;
+                          e.cancelBubble = true;
+                          if (toolMode === 'eraser') {
+                            setSupports((prev) => prev.filter((s) => s.id !== z.id));
+                            if (selectedSupportId === z.id) setSelectedSupportId(null);
+                          } else {
+                            setSelectedSupportId(z.id);
+                          }
+                        }}
+                        onTap={(e) => {
+                          if (!devMode) return;
+                          e.cancelBubble = true;
+                          if (toolMode === 'eraser') {
+                            setSupports((prev) => prev.filter((s) => s.id !== z.id));
+                            if (selectedSupportId === z.id) setSelectedSupportId(null);
+                          } else {
+                            setSelectedSupportId(z.id);
+                          }
+                        }}
+                        onMouseEnter={() => setHoverSupportId(z.id)}
+                        onMouseLeave={() => setHoverSupportId((h) => (h === z.id ? null : h))}
+                      >
+                        <Rect
+                          ref={(node) => { if (node) boxRefs.current[z.id] = node; }}
+                          x={-pxW / 2}
+                          y={-pxH / 2}
+                          width={pxW}
+                          height={pxH}
+                          fill="rgba(0,128,255,0.12)"
+                          stroke={
+                            isSelected
+                              ? 'rgba(0,160,255,0.95)'
+                              : (hoverSupportId === z.id ? 'rgba(0,128,255,0.95)' : 'rgba(0,128,255,0.7)')
+                          }
+                          strokeWidth={2}
+                          strokeScaleEnabled={false}
+                          perfectDrawEnabled={false}
+                          listening={false}
+                        />
+
+                        {devMode && (
+                          <Text
+                            x={-pxW / 2 + 4}
+                            y={-pxH / 2 + 4}
+                            fontSize={12}
+                            fill="#034"
+                            listening={false}
+                            text={
+                              [
+                                z.id ? `id:${z.id}` : '',
+                                z.type ? `type:${z.type}` : '',
+                                z.forceDirection
+                                  ? `dir:${Array.isArray(z.forceDirection) ? z.forceDirection.join('|') : z.forceDirection}`
+                                  : '',
+                                z.momentDirection
+                                  ? `M:${Array.isArray(z.momentDirection) ? z.momentDirection.join('|') : z.momentDirection}`
+                                  : ''
+                              ].filter(Boolean).join(' ')
+                            }
+                          />
+                        )}
+                      </Group>
+                    );
+                  })()}
+
+                  {devMode && isSelected && groupRefs.current[z.id] && (
+                    <Transformer
+                      nodes={[groupRefs.current[z.id]]}
+                      rotateEnabled={true}
+                      anchorSize={8}
+                      keepRatio={false}
+                      flipEnabled={false}
+                      ignoreStroke={true}
+                      boundBoxFunc={(oldBox, newBox) => newBox}
+                      onTransform={() => {
+                        const g = groupRefs.current[z.id];
+                        if (!g) return;
+                        // keep group inside stage while transforming
+                        const stg = getStageRectPx();
+                        const cr = g.getClientRect({ skipShadow: true, skipStroke: false });
+                        let dx = 0, dy = 0;
+                        if (cr.x < stg.left) dx = stg.left - cr.x;
+                        if (cr.y < stg.top) dy = stg.top - cr.y;
+                        if (cr.x + cr.width > stg.right) dx = stg.right - (cr.x + cr.width);
+                        if (cr.y + cr.height > stg.bottom) dy = stg.bottom - (cr.y + cr.height);
+                        if (dx || dy) {
+                          g.x(g.x() + dx);
+                          g.y(g.y() + dy);
+                        }
+                      }}
+                      onTransformEnd={() => {
+                        const g = groupRefs.current[z.id];
+                        const r = boxRefs.current[z.id];
+                        if (!g || !r) return;
+
+                        // bake scale into inner rect and reset group scale
+                        const newW = Math.max(MIN_ZONE_SIZE, r.width() * g.scaleX());
+                        const newH = Math.max(MIN_ZONE_SIZE, r.height() * g.scaleY());
+                        r.width(newW);
+                        r.height(newH);
+                        r.x(-newW / 2);
+                        r.y(-newH / 2);
+                        g.scaleX(1);
+                        g.scaleY(1);
+
+                        // clamp inside stage after baking
+                        const stg = getStageRectPx();
+                        const cr = g.getClientRect({ skipShadow: true, skipStroke: false });
+                        let dx = 0, dy = 0;
+                        if (cr.x < stg.left) dx = stg.left - cr.x;
+                        if (cr.y < stg.top) dy = stg.top - cr.y;
+                        if (cr.x + cr.width > stg.right) dx = stg.right - (cr.x + cr.width);
+                        if (cr.y + cr.height > stg.bottom) dy = stg.bottom - (cr.y + cr.height);
+                        if (dx || dy) {
+                          g.x(g.x() + dx);
+                          g.y(g.y() + dy);
+                        }
+
+                        const cx = g.x();
+                        const cy = g.y();
+                        const rotationDeg = g.rotation() || 0;
+                        const rectPx = { x: cx - newW / 2, y: cy - newH / 2, width: newW, height: newH };
+                        if (imageDraw.w > 0 && imageDraw.h > 0) {
+                          const norm = pxRectToNorm(rectPx);
+                          setSupports((prev) =>
+                            prev.map((s) => (s.id === z.id ? { ...s, ...norm, rotationDeg } : s))
+                          );
+                        }
+                      }}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
+
+            {devMode && toolMode === 'zone-add' && drawingRect && (
+              <Rect
+                x={drawingRect.width < 0 ? drawingRect.x + drawingRect.width : drawingRect.x}
+                y={drawingRect.height < 0 ? drawingRect.y + drawingRect.height : drawingRect.y}
+                width={Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.width))}
+                height={Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.height))}
+                fill="rgba(0,128,255,0.08)"
+                stroke="rgba(0,128,255,0.7)"
+                dash={[6, 4]}
+              />
+            )}
+          </Layer>
+        )}
+
+        {/* Locked carry-over (read-only, normalized → pixels) */}
         <Layer listening={false}>
           {lockedArrowsNorm.map((a) => {
             const sPx = normToPxPoint(a.startN);
@@ -983,7 +1111,7 @@ const Canvas = forwardRef(function Canvas(
           })}
         </Layer>
 
-        {/* 3) Student arrows & moments */}
+        {/* Layer 3: student arrows & moments */}
         <Layer>
           {arrows.map((a) => {
             const isSelected = selectedArrowId === a.id;
@@ -1046,7 +1174,7 @@ const Canvas = forwardRef(function Canvas(
             const img = m.type === 'moment-cw' ? momentCWImage : momentCCWImage;
 
             const handleDragEnd = (e) => {
-              const { x, y } = e.target.position(); // icon center because of offset
+              const { x, y } = e.target.position();
               setMoments((prev) => prev.map((mm) => (mm.id === m.id ? { ...mm, x, y } : mm)));
             };
 
@@ -1091,155 +1219,6 @@ const Canvas = forwardRef(function Canvas(
             );
           })}
         </Layer>
-
-        {/* 4) DEV ZONES ON TOP so they are easy to select in dev mode */}
-        {devMode && (
-          <Layer>
-            {supports.map((z) => {
-              const px = normToPxRect(z);
-              const isSelected = selectedSupportId === z.id;
-
-              // Pixel box and group center
-              const pxW = Math.max(px.width, MIN_ZONE_SIZE);
-              const pxH = Math.max(px.height, MIN_ZONE_SIZE);
-              const cx = px.x + pxW / 2;
-              const cy = px.y + pxH / 2;
-              const rot = Number.isFinite(z.rotationDeg) ? z.rotationDeg : 0;
-
-              return (
-                <React.Fragment key={z.id}>
-                  <Group
-                    ref={(node) => { if (node) groupRefs.current[z.id] = node; }}
-                    x={cx}
-                    y={cy}
-                    rotation={rot}
-                    draggable={isSelected}
-                    dragBoundFunc={dragBoundFor(z.id)}
-                    onDragStart={(e) => onZoneDragStart(z, e)}
-                    onDragMove={(e) => onZoneDragMove(z, e)}
-                    onClick={(e) => {
-                      e.cancelBubble = true;
-                      if (toolMode === 'eraser') {
-                        setSupports((prev) => prev.filter((s) => s.id !== z.id));
-                        if (selectedSupportId === z.id) setSelectedSupportId(null);
-                      } else {
-                        setSelectedSupportId(z.id);
-                      }
-                    }}
-                    onTap={(e) => {
-                      e.cancelBubble = true;
-                      if (toolMode === 'eraser') {
-                        setSupports((prev) => prev.filter((s) => s.id !== z.id));
-                        if (selectedSupportId === z.id) setSelectedSupportId(null);
-                      } else {
-                        setSelectedSupportId(z.id);
-                      }
-                    }}
-                    onMouseEnter={() => setHoverSupportId(z.id)}
-                    onMouseLeave={() => setHoverSupportId((h) => (h === z.id ? null : h))}
-                  >
-                    {/* IMPORTANT: Rect MUST listen so Group is hittable via child */}
-                    <Rect
-                      ref={(node) => { if (node) boxRefs.current[z.id] = node; }}
-                      x={-pxW / 2}
-                      y={-pxH / 2}
-                      width={pxW}
-                      height={pxH}
-                      fill="rgba(0,128,255,0.12)"
-                      stroke={
-                        isSelected
-                          ? 'rgba(0,160,255,0.95)'
-                          : (hoverSupportId === z.id ? 'rgba(0,128,255,0.95)' : 'rgba(0,128,255,0.7)')
-                      }
-                      strokeWidth={2}
-                      strokeScaleEnabled={false}
-                      perfectDrawEnabled={false}
-                    />
-
-                    <Text
-                      x={-pxW / 2 + 4}
-                      y={-pxH / 2 + 4}
-                      fontSize={12}
-                      fill="#034"
-                      listening={false}
-                      text={
-                        [
-                          z.id ? `id:${z.id}` : '',
-                          z.type ? `type:${z.type}` : '',
-                          z.forceDirection
-                            ? `dir:${Array.isArray(z.forceDirection) ? z.forceDirection.join('|') : z.forceDirection}`
-                            : '',
-                          z.momentDirection
-                            ? `M:${Array.isArray(z.momentDirection) ? z.momentDirection.join('|') : z.momentDirection}`
-                            : ''
-                        ].filter(Boolean).join(' ')
-                      }
-                    />
-                  </Group>
-
-                  {isSelected && groupRefs.current[z.id] && (
-                    <Transformer
-                      nodes={[groupRefs.current[z.id]]}
-                      rotateEnabled={true}
-                      anchorSize={8}
-                      keepRatio={false}
-                      flipEnabled={false}
-                      ignoreStroke={true}
-                      boundBoxFunc={(oldBox, newBox) => newBox}
-                      onTransform={() => {
-                        const g = groupRefs.current[z.id];
-                        if (!g) return;
-                        clampTransform(g);
-                      }}
-                      onTransformEnd={() => {
-                        const g = groupRefs.current[z.id];
-                        const r = boxRefs.current[z.id];
-                        if (!g || !r) return;
-
-                        // Bake scale into inner rect size, keep group as pivot
-                        const newW = Math.max(MIN_ZONE_SIZE, r.width() * g.scaleX());
-                        const newH = Math.max(MIN_ZONE_SIZE, r.height() * g.scaleY());
-                        r.width(newW);
-                        r.height(newH);
-                        r.x(-newW / 2);
-                        r.y(-newH / 2);
-                        g.scaleX(1);
-                        g.scaleY(1);
-
-                        clampTransform(g);
-
-                        // Persist normalized rect + rotation
-                        const gcx = g.x();
-                        const gcy = g.y();
-                        const rotationDeg = g.rotation() || 0;
-
-                        const rectPx = { x: gcx - newW / 2, y: gcy - newH / 2, width: newW, height: newH };
-                        if (imageDraw.w > 0 && imageDraw.h > 0) {
-                          const norm = pxRectToNorm(rectPx);
-                          setSupports((prev) =>
-                            prev.map((s) => (s.id === z.id ? { ...s, ...norm, rotationDeg } : s))
-                          );
-                        }
-                      }}
-                    />
-                  )}
-                </React.Fragment>
-              );
-            })}
-
-            {toolMode === 'zone-add' && drawingRect && (
-              <Rect
-                x={drawingRect.width < 0 ? drawingRect.x + drawingRect.width : drawingRect.x}
-                y={drawingRect.height < 0 ? drawingRect.y + drawingRect.height : drawingRect.y}
-                width={Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.width))}
-                height={Math.max(MIN_ZONE_SIZE, Math.abs(drawingRect.height))}
-                fill="rgba(0,128,255,0.08)"
-                stroke="rgba(0,128,255,0.7)"
-                dash={[6, 4]}
-              />
-            )}
-          </Layer>
-        )}
       </Stage>
 
       {/* Supported thumbnail */}
@@ -1291,6 +1270,7 @@ const Canvas = forwardRef(function Canvas(
 });
 
 export default Canvas;
+
 
 
 
