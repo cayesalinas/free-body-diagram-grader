@@ -7,6 +7,7 @@ import problems from './data/problems';
 import './App.css';
 
 function App() {
+  const IS_DEV = process.env.NODE_ENV === 'development';
   // === Views ===
   const [viewMode, setViewMode] = useState('choose');           // 'choose' | 'start' | 'solve'
   const [solveStage, setSolveStage] = useState('supports');     // 'supports' | 'exploded'
@@ -14,7 +15,8 @@ function App() {
   // === Tools / UI state ===
   const [toolMode, setToolMode] = useState(null);
   const [clearSignal, setClearSignal] = useState(0);
-  const [devMode, setDevMode] = useState(false);
+  const [devMode, setDevMode] = useState(IS_DEV);
+
   const [downloadTrigger, setDownloadTrigger] = useState(0);
   const [feedback, setFeedback] = useState(null);
 
@@ -535,7 +537,7 @@ function App() {
               clearSignal={clearSignal}
               mainImage={mainImage}
               referenceImage={referenceImage}
-              devMode={devMode}
+              devMode={IS_DEV && devMode}
               showCanvasBorder={true}
               downloadTrigger={downloadTrigger}
               initialSupportRegions={solveStage === 'exploded' ? explodedRegions : initialRegions}
@@ -626,7 +628,7 @@ function App() {
               Eraser
             </button>
 
-            {devMode && (
+            {IS_DEV && devMode && (
               <button
                 className={toolMode === 'zone-add' ? 'active' : ''}
                 onClick={() => toggleTool('zone-add')}
@@ -679,7 +681,7 @@ function App() {
               )}
 
             {/* Dev access to exploded view without JSON */}
-            {solveStage === 'supports' && devMode && selectedProblem?.explodedImage && (
+            {solveStage === 'supports' && IS_DEV && devMode && selectedProblem?.explodedImage && (
               <button onClick={handleExplodeDev} title="Open exploded view with empty regions so you can define them">
                 Exploded (Dev)
               </button>
@@ -697,24 +699,26 @@ function App() {
               </button>
             )}
 
-            <button
-              style={{
-                backgroundColor: devMode ? '#555' : '#eee',
-                color: devMode ? '#fff' : '#333',
-                padding: '8px 12px',
-                borderRadius: 6,
-                border: '1px solid #ccc',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                setDevMode((v) => !v);
-                setToolMode((t) => (t === 'zone-add' ? null : t));
-              }}
-            >
-              {devMode ? 'Exit Dev Mode' : 'Enter Dev Mode'}
-            </button>
-
-            {devMode && (
+            {IS_DEV && (
+              <button
+                style={{
+                  backgroundColor: devMode ? '#555' : '#eee',
+                  color: devMode ? '#fff' : '#333',
+                  padding: '8px 12px',
+                  borderRadius: 6,
+                  border: '1px solid #ccc',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setDevMode((v) => !v);
+                  setToolMode((t) => (t === 'zone-add' ? null : t));
+                }}
+              >
+                {devMode ? 'Exit Dev Mode' : 'Enter Dev Mode'}
+              </button>
+            )}
+            
+            {IS_DEV && devMode && (
               <button
                 style={{ background: '#007bff', color: '#fff', padding: '8px 12px', borderRadius: 6 }}
                 onClick={handleDownloadRegions}
@@ -734,23 +738,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
