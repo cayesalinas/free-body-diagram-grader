@@ -116,6 +116,46 @@
       "type": "force",
       "forceDirection": ["left", "right"],
       "joint": { "name": "A@member2", "mapFrom": "A", "group": "A", "member": "member2" }
+    },
+    {
+      "id": "C_vertical_m3",
+      "x": 0.9054325955734407,
+      "y": 0.4024914089347079,
+      "width": 0.052313883299798795,
+      "height": 0.2542955326460481,
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "joint": { "name": "C@member3", "group": "C", "member": "member3" }
+    },
+    {
+      "id": "C_horizontal_m3",
+      "x": 0.8511066398390342,
+      "y": 0.46091065292096217,
+      "width": 0.14688128772635814,
+      "height": 0.07903780068728522,
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "joint": { "name": "C@member3", "group": "C", "member": "member3" }
+    },
+    {
+      "id": "C_vertical_m2",
+      "x": 0.9154929577464789,
+      "y": 0.8492268041237113,
+      "width": 0.05030181086519115,
+      "height": 0.24054982817869416,
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "joint": { "name": "C@member2", "group": "C", "member": "member2" }
+    },
+    {
+      "id": "C_horizontal_m2",
+      "x": 0.8571428571428571,
+      "y": 0.8939003436426117,
+      "width": 0.16498993963782696,
+      "height": 0.07560137457044673,
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "joint": { "name": "C@member2", "group": "C", "member": "member2" }
     }
   ],
   "couplings": [
@@ -133,6 +173,16 @@
       "type": "equal_opposite_force",
       "group": "D",
       "pairs": [["D_tension_m1", "D_tension_m3"]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "C",
+      "pairs": [["C_vertical_m2", "C_vertical_m3"]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "C",
+      "pairs": [["C_horizontal_m2", "C_horizontal_m3"]]
     }
   ]
 }

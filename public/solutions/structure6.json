@@ -10,7 +10,7 @@
       "type": "force",
       "forceDirection": "up",
       "minLengthPx": 25,
-      "joint": { "name": "C", "type": "roller" }
+      "joint": { "name": "C", "type": "pin" }
     },
     {
       "id": "E_weight",
@@ -35,6 +35,18 @@
       "forceDirection": "left",
       "minLengthPx": 25,
       "joint": { "name": "D", "type": "wall" }
+    },
+    {
+      "id": "C_horizontal",
+      "rotationDeg": 0,
+      "x": 0.12877263581488935,
+      "y": 0.7435747663551402,
+      "width": 0.18309859154929578,
+      "height": 0.10747663551401869,
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "minLengthPx": 25,
+      "joint": { "name": "C", "type": "pin" }
     }
   ],
   "imageDraw": {
