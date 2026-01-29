@@ -79,16 +79,30 @@ function App() {
     switch (viewMode) {
       case 'choose':
         return 'Select an exercise to begin';
+
       case 'start':
-        return 'Observe the supported structure and click to go to the next page when you are ready to solve it';
+        return (
+          selectedProblem?.descriptions?.start ||
+          selectedProblem?.description || // fallback to your existing single field
+          'Observe the supported structure and click to go to the next page when you are ready to solve it'
+        );
+
       case 'solve':
-        return solveStage === 'exploded'
-          ? 'Explode members and add internal action–reaction forces at the breakaway joints'
-          : 'Replace the supports with the appropriate forces/moments';
+        if (solveStage === 'exploded') {
+          return (
+            selectedProblem?.descriptions?.exploded ||
+            'Explode members and add internal action–reaction forces at the breakaway joints'
+          );
+        }
+        return (
+          selectedProblem?.descriptions?.supports ||
+          'Replace the supports with the appropriate forces/moments'
+        );
+
       default:
         return 'Select an exercise to begin';
     }
-  }, [viewMode, solveStage]);
+  }, [viewMode, solveStage, selectedProblem]);
 
   // === Page title ===
   useEffect(() => {
