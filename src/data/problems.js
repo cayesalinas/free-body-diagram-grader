@@ -133,6 +133,30 @@ const problems = [
     imageNoSupports: '/images/structure6_nosupports.png',
     solutionJson: '/solutions/structure6.json',
   },
+
+  {
+    id: 'p7',
+    title: 'Problem 7',
+    description:
+      'Identify all external forces acting on the supported structure shown. Replace each support with the correct reaction forces and/or moments.',
+
+    descriptions: {
+      start:
+        'Observe the frame and click to go to the next page when you are ready to solve it.',
+      supports:
+        'Add the appropriate forces acting on the unsupported structure. You may assume that this is a massless frame.',
+      exploded:
+        'Add internal action–reaction forces at the breakaway joints.',
+    },
+
+    image: '/images/structure7.png',
+    imageNoSupports: '/images/structure7_nosupports.png',
+    solutionJson: '/solutions/structure7.json',
+
+    // Exploded stage assets
+    explodedImage: '/images/structure7_exploded.png',
+    explodedSolutionJson: '/solutions/structure7_exploded.json',
+  }
 ];
 
 export default problems;
