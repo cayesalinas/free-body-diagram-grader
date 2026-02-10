@@ -156,7 +156,7 @@ const problems = [
     // Exploded stage assets
     explodedImage: '/images/structure7_exploded.png',
     explodedSolutionJson: '/solutions/structure7_exploded.json',
-  } 
+  }, 
 
   {
     id: 'p8',
