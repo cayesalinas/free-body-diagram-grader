@@ -225,7 +225,7 @@ const problems = [
 
     image: '/images/structure10.png',
     imageNoSupports: '/images/structure10_nosupports.png',
-    solutionJson: '/solutions/structure19.json',
+    solutionJson: '/solutions/structure10.json',
   } 
 ];
 

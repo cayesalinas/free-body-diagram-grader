@@ -1,0 +1,50 @@
+{
+  "regions": [
+    {
+      "id": "zone_1771507802185_wep3",
+      "rotationDeg": 0,
+      "x": 0.12084592145015106,
+      "y": 0.6434248554913294,
+      "width": 0.09214501510574018,
+      "height": 0.2861271676300578,
+      "type": "force",
+      "forceDirection": "up",
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "roller" }
+    },
+    {
+      "id": "zone_1771507805648_lebx",
+      "rotationDeg": 0,
+      "x": 0.7099697885196374,
+      "y": 0.6492052023121387,
+      "width": 0.0891238670694864,
+      "height": 0.2861271676300578,
+      "type": "force",
+      "forceDirection": "up",
+      "minLengthPx": 25,
+      "joint": { "name": "D", "type": "pin" }
+    },
+    {
+      "id": "zone_1771507814202_u019",
+      "rotationDeg": 0,
+      "x": 0.6419939577039275,
+      "y": 0.6000722543352601,
+      "width": 0.24018126888217523,
+      "height": 0.1531791907514451, 
+      "type": "force",
+      "forceDirection": ["left","right"],
+      "minLengthPx": 25,
+      "joint": { "name": "D", "type": "pin" }
+    }
+  ],
+  "imageDraw": {
+    "x": 377,
+    "y": 150,
+    "w": 662,
+    "h": 346
+  },
+  "meta": {
+    "generatedAt": "2026-02-19T13:30:19.330Z",
+    "version": 1
+  }
+}

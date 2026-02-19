@@ -1,0 +1,50 @@
+{
+  "regions": [
+    {
+      "id": "A y-direction",
+      "rotationDeg": 0,
+      "x": 0.2932692307692308,
+      "y": 0.41510115606936415,
+      "width": 0.10336538461538461,
+      "height": 0.2976878612716763, 
+      "type": "force",
+      "forceDirection": ["up","down"],
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "fixed" }
+    },
+    {
+      "id": "A x-direction",
+      "rotationDeg": 0,
+      "x": 0.14903846153846154,
+      "y": 0.470014450867052,
+      "width": 0.38221153846153844,
+      "height": 0.11849710982658959, 
+      "type": "force",
+      "forceDirection": ["left","right"],
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "fixed" }
+    },
+    {
+      "id": "A moment",
+      "rotationDeg": 0,
+      "x": 0.18990384615384615,
+      "y": 0.39486994219653176,
+      "width": 0.31490384615384615,
+      "height": 0.28034682080924855, 
+      "type": "moment",
+      "forceDirection": ["CW","CCW"],
+      "minLengthPx": 25,
+      "joint": { "name": "A", "type": "fixed" } 
+    }
+  ],
+  "imageDraw": {
+    "x": 500,
+    "y": 150,
+    "w": 416,
+    "h": 346
+  },
+  "meta": {
+    "generatedAt": "2026-02-19T13:59:43.181Z",
+    "version": 1
+  }
+}
