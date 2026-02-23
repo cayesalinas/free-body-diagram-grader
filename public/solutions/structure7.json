@@ -1,19 +1,19 @@
 {
   "regions": [
     {
-      "id": "zone_1771508111713_n3v4",
+      "id": "A vertical",
       "rotationDeg": 0,
       "x": 0.33121019108280253,
       "y": 0.8110549132947977,
       "width": 0.12738853503184713,
       "height": 0.36416184971098264, 
       "type": "force",
-      "forceDirection": "up",
+      "forceDirection": ["up","down"],
       "minLengthPx": 25,
       "joint": { "name": "A", "type": "pin" }
     },
     {
-      "id": "zone_1771508118034_7pzk",
+      "id": "A horizontal",
       "rotationDeg": 0,
       "x": 0.19532908704883228,
       "y": 0.8486271676300579,
@@ -25,19 +25,19 @@
       "joint": { "name": "A", "type": "pin" }
     },
     {
-      "id": "zone_1771508122502_a0yv",
+      "id": "C vertical",
       "rotationDeg": 0,
       "x": 0.8386411889596603,
       "y": 0.5451589595375722,
       "width": 0.11677282377919321,
       "height": 0.38439306358381503, 
       "type": "force",
-      "forceDirection": "up",
+      "forceDirection": ["up","down"],
       "minLengthPx": 25,
       "joint": { "name": "C", "type": "pin" }
     },
     {
-      "id": "zone_1771508126871_4dl6",
+      "id": "C horizontal",
       "rotationDeg": 0,
       "x": 0.7600849256900213,
       "y": 0.6116329479768786,

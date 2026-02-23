@@ -1,7 +1,7 @@
 {
   "regions": [
     {
-      "id": "A y-direction",
+      "id": "A vertical",
       "rotationDeg": 0,
       "x": 0.2932692307692308,
       "y": 0.41510115606936415,
@@ -13,7 +13,7 @@
       "joint": { "name": "A", "type": "fixed" }
     },
     {
-      "id": "A x-direction",
+      "id": "A horizontal",
       "rotationDeg": 0,
       "x": 0.14903846153846154,
       "y": 0.470014450867052,
