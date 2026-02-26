@@ -22,7 +22,7 @@
       "type": "force",
       "forceDirection": ["up","down"],
       "minLengthPx": 25,
-      "joint": { "name": "D", "type": "pin" }
+      "joint": { "name": "D", "type": "pin" } 
     },
     {
       "id": "D horizontal",
