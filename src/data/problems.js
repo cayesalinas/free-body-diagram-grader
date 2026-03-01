@@ -182,32 +182,32 @@ const problems = [
     explodedSolutionJson: '/solutions/structure8_exploded.json',
   }, 
 
+ //{
+   // id: 'p9',
+   // title: 'Problem 9',
+
+    // (Optional) legacy single-field description (kept as fallback/reference)
+   // description:
+   //   'Identify all external forces acting on the supported structure shown. Replace each support with the correct reaction forces and/or moments.',
+
+    // New: per-screen subtitles (edit these placeholders)
+  //  descriptions: {
+     // start:
+     //   'Observe the supported structure and click to go to the next page when you are ready to solve it.',
+     // supports:
+     //   'Add the appropriate forces acting on the unsupported structure.',
+     // exploded:
+     //   '',
+   // },
+
+   // image: '/images/structure9.png',
+   // imageNoSupports: '/images/structure9_nosupports.png',
+   // solutionJson: '/solutions/structure9.json',
+ // }, 
+
   {
     id: 'p9',
     title: 'Problem 9',
-
-    // (Optional) legacy single-field description (kept as fallback/reference)
-    description:
-      'Identify all external forces acting on the supported structure shown. Replace each support with the correct reaction forces and/or moments.',
-
-    // New: per-screen subtitles (edit these placeholders)
-    descriptions: {
-      start:
-        'Observe the supported structure and click to go to the next page when you are ready to solve it.',
-      supports:
-        'Add the appropriate forces acting on the unsupported structure.',
-      exploded:
-        '',
-    },
-
-    image: '/images/structure9.png',
-    imageNoSupports: '/images/structure9_nosupports.png',
-    solutionJson: '/solutions/structure9.json',
-  }, 
-
-  {
-    id: 'p10',
-    title: 'Problem 10',
 
     // (Optional) legacy single-field description (kept as fallback/reference)
     description:

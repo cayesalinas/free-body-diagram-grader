@@ -1,0 +1,144 @@
+{
+  "regions": [
+    {
+      "id": "A horizontal m4",
+      "rotationDeg": 0,
+      "x": 0.10810810810810811,
+      "y": 0.6492052023121387,
+      "width": 0.12097812097812098,
+      "height": 0.09248554913294797, 
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "minLengthPx": 25,
+      "joint": { "name": "A@member4", "group": "A", "member": "member4" }
+    },
+    {
+      "id": "C vertical m4",
+      "rotationDeg": 0,
+      "x": 0.40283140283140284,
+      "y": 0.5942919075144508,
+      "width": 0.032175032175032175,
+      "height": 0.23699421965317918, 
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "minLengthPx": 25,
+      "joint": { "name": "C@member4", "group": "C", "member": "member4" }
+    },
+    {
+      "id": "D horizontal m4",
+      "rotationDeg": 0,
+      "x": 0.5933075933075933,
+      "y": 0.6231936416184971,
+      "width": 0.13256113256113256,
+      "height": 0.13583815028901733, 
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "minLengthPx": 25,
+      "joint": { "name": "D@member4", "group": "D", "member": "member4" } 
+    },
+    {
+      "id": "C vertical m3",
+      "rotationDeg": 0,
+      "x": 0.3745173745173745,
+      "y": 0.4902456647398844,
+      "width": 0.04504504504504504,
+      "height": 0.1994219653179191, 
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "minLengthPx": 25,
+      "joint": { "name": "C@member3", "group": "C", "member": "member3" }
+    },
+    {
+      "id": "B vertical m3",
+      "rotationDeg": 0,
+      "x": 0.3770913770913771,
+      "y": -0.061777456647398844,
+      "width": 0.043758043758043756,
+      "height": 0.21676300578034682, 
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "minLengthPx": 25,
+      "joint": { "name": "B@member3", "group": "B", "member": "member3" }
+    },
+    {
+      "id": "B 30deg m1",
+      "rotationDeg": 0,
+      "x": 0.22265122265122264,
+      "y": 0.07984104046242775,
+      "width": 0.12483912483912483,
+      "height": 0.17052023121387283, 
+      "type": "force",
+      "angle": [30,210],
+      "minLengthPx": 25,
+      "joint": { "name": "B@member1", "group": "B", "member": "member1" }
+    },
+    {
+      "id": "A 30deg m1",
+      "rotationDeg": 0,
+      "x": -0.02702702702702703,
+      "y": 0.6000722543352601,
+      "width": 0.12483912483912483,
+      "height": 0.20520231213872833, 
+      "type": "force",
+      "angle": [30,210],
+      "minLengthPx": 25,
+      "joint": { "name": "A@member1", "group": "A", "member": "member1" }
+    },
+    {
+      "id": "B 150deg m2",
+      "rotationDeg": 0,
+      "x": 0.4671814671814672,
+      "y": 0.0509393063583815,
+      "width": 0.11068211068211069,
+      "height": 0.2254335260115607, 
+      "type": "force",
+      "angle": [150,330],
+      "minLengthPx": 25,
+      "joint": { "name": "B@member2", "group": "B", "member": "member2" }
+    },
+    {
+      "id": "D 150 deg m2",
+      "rotationDeg": 0,
+      "x": 0.7400257400257401,
+      "y": 0.6029624277456648,
+      "width": 0.1492921492921493,
+      "height": 0.18786127167630057, 
+      "type": "force",
+      "angle": [150,330],
+      "minLengthPx": 25,
+      "joint": { "name": "D@member2", "group": "D", "member": "member2" } 
+    }
+  ], 
+  "couplings": [
+    {
+      "type": "equal_opposite_force",
+      "group": "A",
+      "pairs": [["A horizontal m4", "A 30deg m1"]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "B",
+      "pairs": [["B vertical m3", ["B 30deg m1","B 150deg m2"]]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "C",
+      "pairs": [["C vertical m4", "C vertical m3"]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "D",
+      "pairs": [["D horizontal m4", "D 150 deg m2"]] 
+    }
+  ],
+  "imageDraw": {
+    "x": 320,
+    "y": 150,
+    "w": 777,
+    "h": 346
+  },
+  "meta": {
+    "generatedAt": "2026-02-26T05:28:38.162Z",
+    "version": 1
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "regions": [
+    {
+      "id": "A vertical",
+      "rotationDeg": 0,
+      "x": 0.292910447761194,
+      "y": 0.8312861271676301,
+      "width": 0.11007462686567164,
+      "height": 0.31213872832369943, 
+      "type": "force",
+      "forceDirection": ["up","down"],
+      "minLengthPx": 25,
+      "joint": { "name": "A@member1", "mapFrom": "A", "group": "A", "member": "member1"} 
+    },
+    {
+      "id": "A horizontal",
+      "rotationDeg": 0,
+      "x": 0.22761194029850745,
+      "y": 0.8659682080924855,
+      "width": 0.27798507462686567,
+      "height": 0.16473988439306358, 
+      "type": "force",
+      "forceDirection": ["left","right"],
+      "minLengthPx": 25,
+      "joint": { "name": "A@member1", "mapFrom": "A", "group": "A", "member": "member1"} 
+    },
+    {
+      "id": "C vertical",
+      "rotationDeg": 0,
+      "x": 0.875,
+      "y": 0.747471098265896,
+      "width": 0.07276119402985075,
+      "height": 0.2861271676300578, 
+      "type": "force",
+      "forceDirection": ["up","down"],
+      "minLengthPx": 25,
+      "joint": { "name": "C@member2", "mapFrom": "C", "group": "C", "member": "member2"} 
+    },
+    {
+      "id": "C horizontal",
+      "rotationDeg": 0,
+      "x": 0.8152985074626866,
+      "y": 0.8110549132947977,
+      "width": 0.22761194029850745,
+      "height": 0.13583815028901733, 
+      "type": "force",
+      "forceDirection": ["left","right"],
+      "minLengthPx": 25,
+      "joint": { "name": "C@member2", "mapFrom": "C", "group": "C", "member": "member2"} 
+    },
+    {
+      "id": "B vertical m1",
+      "rotationDeg": 0,
+      "x": 0.5354477611940298,
+      "y": 0.20989884393063585,
+      "width": 0.07276119402985075,
+      "height": 0.22832369942196531, 
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "minLengthPx": 25,
+      "joint": { "name": "B@member1", "group": "B", "member": "member1" }
+    },
+    {
+      "id": "B horizontal m1",
+      "rotationDeg": 0,
+      "x": 0.48507462686567165,
+      "y": 0.2763728323699422,
+      "width": 0.1884328358208955,
+      "height": 0.13005780346820808, 
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "minLengthPx": 25,
+      "joint": { "name": "B@member1", "group": "B", "member": "member1" } 
+    },
+    {
+      "id": "B vertical m2",
+      "rotationDeg": 0,
+      "x": 0.6492537313432836,
+      "y": 0.3833092485549133,
+      "width": 0.07649253731343283,
+      "height": 0.22832369942196531, 
+      "type": "force",
+      "forceDirection": ["up", "down"],
+      "minLengthPx": 25,
+      "joint": { "name": "B@member2", "group": "B", "member": "member2" } 
+    },
+    {
+      "id": "B horizontal m2",
+      "rotationDeg": 0,
+      "x": 0.6007462686567164,
+      "y": 0.49891618497109824,
+      "width": 0.15485074626865672,
+      "height": 0.1069364161849711, 
+      "type": "force",
+      "forceDirection": ["left", "right"],
+      "minLengthPx": 25,
+      "joint": { "name": "B@member2", "group": "B", "member": "member2" } 
+    }
+  ], 
+  "couplings": [
+    {
+      "type": "equal_opposite_force",
+      "group": "B",
+      "pairs": [["B vertical m1", "B vertical m2"]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "B",
+      "pairs": [["B horizontal m1", "B horizontal m2"]]
+    } 
+  ],
+  "imageDraw": {
+    "x": 440,
+    "y": 150,
+    "w": 536,
+    "h": 346
+  },
+  "meta": {
+    "generatedAt": "2026-02-26T06:02:11.868Z",
+    "version": 1
+  }
+}
