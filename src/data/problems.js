@@ -195,14 +195,14 @@ const problems = [
       start:
        'Observe the supported structure and click to go to the next page when you are ready to solve it.',
      supports:
-       'Add the appropriate forces acting on the unsupported structure. Any friction forces should act on the lower boundary of the box and any other members this layer interacts with.',
+       'Add the appropriate forces acting on the unsupported structure. Any FRICTION forces should be placed on point A, while NORMAL forces should be on point B.', 
      exploded:
        '',
    },
 
-    image: '/images/structure9.png',
-    imageNoSupports: '/images/structure9_nosupports.png',
-    solutionJson: '/solutions/structure9.json',
+    image: '/images/structure9_full.png',
+    imageNoSupports: '/images/structure9_nosupports_full.png',
+    solutionJson: '/solutions/structure9_full.json', 
   }, 
 
   {

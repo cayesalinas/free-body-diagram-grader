@@ -1,0 +1,62 @@
+{
+  "regions": [
+    {
+      "id": "friction",
+      "rotationDeg": 0,
+      "x": 0.27247579529737204,
+      "y": 0.7532514450867052,
+      "width": 0.1507607192254495,
+      "height": 0.1416184971098266, 
+      "type": "force",
+      "angleRangesDeg": [[5,25],[185,205]], 
+      "minLengthPx": 25,
+      "joint": { "name": "box trailing edge", "type": "fixed" } 
+    },
+    {
+      "id": "force due to mass/gravity",
+      "rotationDeg": 0,
+      "x": 0.4661134163208852,
+      "y": 0.6145231213872833,
+      "width": 0.040110650069156296,
+      "height": 0.2976878612716763, 
+      "type": "force",
+      "forceDirection": "down",
+      "minLengthPx": 25,
+      "joint": { "name": "CoM", "type": "fixed" } 
+    },
+    {
+      "id": "normal_ramp",
+      "rotationDeg": 0,
+      "x": 0.5491009681881052,
+      "y": 0.516257225433526,
+      "width": 0.05255878284923928,
+      "height": 0.18208092485549132, 
+      "type": "force",
+      "angleRangesDeg": [[95,115],[275,295]], 
+      "minLengthPx": 25,
+      "joint": { "name": "ramp top edge", "type": "fixed" } 
+    },
+    {
+      "id": "normal_box",
+      "rotationDeg": 0,
+      "x": 0.5504840940525588,
+      "y": 0.6954479768786127,
+      "width": 0.05255878284923928,
+      "height": 0.21965317919075145, 
+      "type": "force",
+      "angleRangesDeg": [[95,115],[275,295]], 
+      "minLengthPx": 25,
+      "joint": { "name": "box bottom edge", "type": "fixed" } 
+    }
+  ],
+  "imageDraw": {
+    "x": 347,
+    "y": 150,
+    "w": 723,
+    "h": 346
+  },
+  "meta": {
+    "generatedAt": "2026-04-01T12:54:31.527Z",
+    "version": 1
+  }
+}
