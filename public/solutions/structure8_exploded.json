@@ -118,7 +118,12 @@
     {
       "type": "equal_opposite_force",
       "group": "B",
-      "pairs": [["B vertical m3", ["B 30deg m1","B 150deg m2"]]]
+      "pairs": [["B vertical m3", "B 30deg m1"]]
+    },
+    {
+      "type": "equal_opposite_force",
+      "group": "B",
+      "pairs": [["B vertical m3", "B 150deg m2"]]
     },
     {
       "type": "equal_opposite_force",

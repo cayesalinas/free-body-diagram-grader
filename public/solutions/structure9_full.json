@@ -8,7 +8,7 @@
       "width": 0.1507607192254495,
       "height": 0.1416184971098266, 
       "type": "force",
-      "angleRangesDeg": [[5,25],[185,205]], 
+      "angle": [[5,25],[185,205]], 
       "minLengthPx": 25,
       "joint": { "name": "box trailing edge", "type": "fixed" } 
     },
@@ -32,7 +32,7 @@
       "width": 0.05255878284923928,
       "height": 0.18208092485549132, 
       "type": "force",
-      "angleRangesDeg": [[95,115],[275,295]], 
+      "angle": [[95,115],[275,295]], 
       "minLengthPx": 25,
       "joint": { "name": "ramp top edge", "type": "fixed" } 
     },
@@ -44,7 +44,7 @@
       "width": 0.05255878284923928,
       "height": 0.21965317919075145, 
       "type": "force",
-      "angleRangesDeg": [[95,115],[275,295]], 
+      "angle": [[95,115],[275,295]], 
       "minLengthPx": 25,
       "joint": { "name": "box bottom edge", "type": "fixed" } 
     }
